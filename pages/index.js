@@ -73,6 +73,7 @@ export default function Home(props) {
   const [openInvestito, setOpenInvestito] = useState(false);
 
   const positivo = rendimentoMedio >= 0;
+  const guadagnoTotale = totaleValoreAttuale - totaleInvestito;
 
   return (
     <div style={{ padding: '24px', maxWidth: '480px', margin: '0 auto', fontFamily: '-apple-system, sans-serif' }}>
@@ -99,7 +100,7 @@ export default function Home(props) {
           </div>
           <p style={{ fontSize: '18px', fontWeight: 'bold' }}>€ {formatEuro(totaleValoreAttuale)}</p>
           <p style={{ fontSize: '11px', color: positivo ? '#4ade80' : '#f87171', marginTop: '2px' }}>
-            € {formatEuro(totaleInvestito)} cap. - {formatPercent(rendimentoMedio)}
+            {positivo ? '+' : ''}€ {formatEuro(guadagnoTotale)} ({formatPercent(rendimentoMedio)})
           </p>
         </div>
       </div>
@@ -132,7 +133,9 @@ export default function Home(props) {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
                   <p style={{ fontSize: '11px', color: '#9aa0a6' }}>Capitale: € {formatEuro(inv.totInvestito)}</p>
-                  <p style={{ fontSize: '11px', color: invPositivo ? '#4ade80' : '#f87171' }}>{formatPercent(inv.rendimento)}</p>
+                  <p style={{ fontSize: '11px', color: invPositivo ? '#4ade80' : '#f87171' }}>
+                    {invPositivo ? '+' : ''}€ {formatEuro(inv.plusMinus)} ({formatPercent(inv.rendimento)})
+                  </p>
                 </div>
               </div>
             );
