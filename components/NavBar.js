@@ -75,6 +75,29 @@ function Icon(props) {
   return null;
 }
 
+function NavItem(props) {
+  const item = props.item;
+  const active = props.active;
+
+  const linkStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3px',
+    padding: active ? '8px 14px' : '8px 10px',
+    borderRadius: '20px',
+    background: active ? 'rgba(96,165,250,0.15)' : 'transparent',
+    textDecoration: 'none',
+  };
+
+  return React.createElement(
+    'a',
+    { href: item.href, style: linkStyle },
+    React.createElement(Icon, { name: item.icon, active: active }),
+    active ? React.createElement('span', { style: { fontSize: '10px', color: '#60a5fa', fontWeight: 'bold', whiteSpace: 'nowrap' } }, item.label) : null
+  );
+}
+
 export default function NavBar() {
   const router = useRouter();
   const current = router.pathname;
@@ -97,26 +120,7 @@ export default function NavBar() {
     }}>
       {items.map(function(item, i) {
         const active = current === item.href;
-        return (
-          <a key={i} href={item.href} style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px',
-            padding: active ? '8px 14px' : '8px 10px',
-            borderRadius: '20px',
-            background: active ? 'rgba(96,165,250,0.15)' : 'transparent',
-            textDecoration: 'none',
-            transition: 'all 0.15s',
-          }}>
-            <Icon name={item.icon} active={active} />
-            {active && (
-              <span style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                {item.label}
-              </span>
-            )}
-          </a>
-        );
+        return <NavItem key={i} item={item} active={active} />;
       })}
     </div>
   );
