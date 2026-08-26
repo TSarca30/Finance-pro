@@ -13,11 +13,18 @@ function parsePercent(value) {
   return parseFloat(cleaned) || 0;
 }
 
+function parseDataIt(value) {
+  if (!value) return null;
+  const parts = value.split('/');
+  if (parts.length !== 3) return null;
+  return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+}
+
 export async function getServerSideProps() {
   const saldiRows = await getSheetData('Saldi_Conti');
   const investRows = await getSheetData('Investimenti');
   const transRows = await getSheetData('Transazioni');
-  
+
   const contiData = saldiRows.slice(4).filter(r => r[0]);
   const conti = contiData.map(r => ({
     nome: r[0],
@@ -47,13 +54,6 @@ export async function getServerSideProps() {
 
   const totale = liquido + totaleValoreAttuale;
 
-  function parseDataIt(value) {
-    if (!value) return null;
-    const parts = value.split('/');
-    if (parts.length !== 3) return null;
-    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-  }
-
   const oggi = new Date();
   const meseCorrente = oggi.getMonth();
   const annoCorrente = oggi.getFullYear();
@@ -63,10 +63,10 @@ export async function getServerSideProps() {
 
   transDataRows.forEach(function(r) {
     const data = parseDataIt(r[1]);
-    const tipo = r[7] || '';
+    const tipo = String(r[7] || '').trim();
     if (!data || tipo !== 'Uscita') return;
     if (data.getMonth() !== meseCorrente || data.getFullYear() !== annoCorrente) return;
-    const cat = r[3] || 'Altro';
+    const cat = String(r[3] || '').trim() || 'Altro';
     const importo = parseEuro(r[6]);
     uscitePerCategoria[cat] = (uscitePerCategoria[cat] || 0) + Math.abs(importo);
   });
@@ -101,7 +101,7 @@ export default function Home(props) {
   const totale = props.totale;
   const usciteMese = props.usciteMese;
   const totaleUsciteMese = props.totaleUsciteMese;
-  
+
   const [openLiquido, setOpenLiquido] = useState(false);
   const [openInvestito, setOpenInvestito] = useState(false);
 
@@ -206,3 +206,6 @@ export default function Home(props) {
       <a href="/analytics" style={{ display: 'block', background: '#1a1d24', borderRadius: '16px', padding: '16px', textAlign: 'center', textDecoration: 'none', color: '#f5f5f5' }}>
         <p style={{ fontSize: '13px' }}>Vai alle analitiche dettagliate →</p>
       </a>
+    </div>
+  );
+}
