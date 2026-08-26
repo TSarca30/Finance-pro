@@ -144,9 +144,9 @@ export default function Home(props) {
       )}
 
       <h2 style={{ fontSize: '16px', marginTop: '24px', marginBottom: '12px', color: '#9aa0a6' }}>Analitiche</h2>
-      <div style={{ background: '#1a1d24', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
-        <p style={{ fontSize: '13px', color: '#6b7280' }}>In arrivo nel prossimo passo</p>
-      </div>
+      <a href="/analytics" style={{ display: 'block', background: '#1a1d24', borderRadius: '16px', padding: '20px', textAlign: 'center', textDecoration: 'none', color: '#f5f5f5' }}>
+        <p style={{ fontSize: '13px' }}>Vai alle analitiche dettagliate →</p>
+      </a>
     </div>
   );
 }
