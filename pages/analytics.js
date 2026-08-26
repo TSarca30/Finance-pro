@@ -24,12 +24,12 @@ export async function getServerSideProps() {
     .map(r => ({
       id: r[0],
       data: r[1],
-      conto: r[2],
-      categoria: r[3] || '',
-      sottocategoria: r[4] || '',
+      conto: String(r[2] || '').trim(),
+      categoria: String(r[3] || '').trim(),
+      sottocategoria: String(r[4] || '').trim(),
       descrizione: r[5] || '',
       importo: parseEuro(r[6]),
-      tipo: r[7] || '',
+      tipo: String(r[7] || '').trim(),
     }));
 
   return { props: { transazioni } };
