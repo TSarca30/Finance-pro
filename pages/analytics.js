@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { getSheetData } from '../lib/googleSheets';
+import NavBar from '../components/NavBar';
 
 function parseEuro(value) {
   if (!value) return 0;
@@ -97,7 +98,7 @@ export default function Analytics(props) {
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '480px', margin: '0 auto', fontFamily: '-apple-system, sans-serif' }}>
+    <div style={{ padding: '24px', paddingBottom: '100px', maxWidth: '480px', margin: '0 auto', fontFamily: '-apple-system, sans-serif' }}>
       <Link href="/" style={{ fontSize: '13px', color: '#9aa0a6' }}>&larr; Indietro</Link>
       <h1 style={{ fontSize: '22px', margin: '12px 0 20px' }}>Analitiche</h1>
 
@@ -174,6 +175,8 @@ export default function Analytics(props) {
           Nessuna transazione trovata con questi filtri
         </p>
       )}
+
+      <NavBar />
     </div>
   );
 }
