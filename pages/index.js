@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import NavBar from '../components/NavBar';
 import { getSheetData } from '../lib/googleSheets';
 
 function parseEuro(value) {
@@ -109,7 +110,7 @@ export default function Home(props) {
   const guadagnoTotale = totaleValoreAttuale - totaleInvestito;
 
   return (
-    <div style={{ padding: '24px', maxWidth: '480px', margin: '0 auto', fontFamily: '-apple-system, sans-serif' }}>
+    <div style={{ padding: '24px', paddingBottom: '100px', maxWidth: '480px', margin: '0 auto', fontFamily: '-apple-system, sans-serif' }}>
       <h1 style={{ fontSize: '22px', marginBottom: '20px' }}>Finanze Personali</h1>
 
       <div style={{ background: '#1a1d24', borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
@@ -206,6 +207,8 @@ export default function Home(props) {
       <a href="/analytics" style={{ display: 'block', background: '#1a1d24', borderRadius: '16px', padding: '16px', textAlign: 'center', textDecoration: 'none', color: '#f5f5f5' }}>
         <p style={{ fontSize: '13px' }}>Vai alle analitiche dettagliate →</p>
       </a>
+
+      <NavBar />
     </div>
   );
 }
