@@ -15,6 +15,7 @@ export async function getServerSideProps() {
   for (let i = 5; i < rows.length; i++) {
     const row = rows[i];
     if (!row || !row[0]) continue;
+    if (row[0].indexOf('Totale') === 0) continue;
     rate.push({
       rowNumber: i + 1,
       descrizione: row[0] || '',
