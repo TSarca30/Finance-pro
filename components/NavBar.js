@@ -9,7 +9,9 @@ const items = [
   { href: '/budget', label: 'Budget', icon: 'target' },
 ];
 
-function Icon({ name, active }) {
+function Icon(props) {
+  const name = props.name;
+  const active = props.active;
   const color = active ? '#60a5fa' : '#9aa0a6';
   const size = 20;
   const common = { width: size, height: size, fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
@@ -96,21 +98,17 @@ export default function NavBar() {
       {items.map(function(item, i) {
         const active = current === item.href;
         return (
-          
-            key={i}
-            href={item.href}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '3px',
-              padding: active ? '8px 14px' : '8px 10px',
-              borderRadius: '20px',
-              background: active ? 'rgba(96,165,250,0.15)' : 'transparent',
-              textDecoration: 'none',
-              transition: 'all 0.15s',
-            }}
-          >
+          <a key={i} href={item.href} style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '3px',
+            padding: active ? '8px 14px' : '8px 10px',
+            borderRadius: '20px',
+            background: active ? 'rgba(96,165,250,0.15)' : 'transparent',
+            textDecoration: 'none',
+            transition: 'all 0.15s',
+          }}>
             <Icon name={item.icon} active={active} />
             {active && (
               <span style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
