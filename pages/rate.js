@@ -67,6 +67,34 @@ export default function Rate(props) {
     return parts[2] + '/' + parts[1] + '/' + parts[0];
   }
 
+  function handleDescrizioneChange(e) {
+    setDescrizione(e.target.value);
+  }
+
+  function handleCategoriaChange(e) {
+    setCategoria(e.target.value);
+  }
+
+  function handleImportoChange(e) {
+    setImporto(e.target.value);
+  }
+
+  function handleContoChange(e) {
+    setConto(e.target.value);
+  }
+
+  function handleFrequenzaChange(e) {
+    setFrequenza(e.target.value);
+  }
+
+  function handleDataChange(e) {
+    setProssimaScadenza(e.target.value);
+  }
+
+  function handleNumeroRateChange(e) {
+    setNumeroRateTotali(e.target.value);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
@@ -75,11 +103,11 @@ export default function Rate(props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          descrizione,
-          categoria,
+          descrizione: descrizione,
+          categoria: categoria,
           importo: parseFloat(importo),
-          conto,
-          frequenza,
+          conto: conto,
+          frequenza: frequenza,
           prossimaScadenza: formatDateForSheet(prossimaScadenza),
           numeroRateTotali: numeroRateTotali ? parseInt(numeroRateTotali) : '',
         }),
@@ -102,7 +130,7 @@ export default function Rate(props) {
       const res = await fetch('/api/paga-rata', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rowNumber }),
+        body: JSON.stringify({ rowNumber: rowNumber }),
       });
       const data = await res.json();
       if (data.success) {
@@ -121,7 +149,7 @@ export default function Rate(props) {
       const res = await fetch('/api/elimina-rata', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rowNumber }),
+        body: JSON.stringify({ rowNumber: rowNumber }),
       });
       const data = await res.json();
       if (data.success) {
@@ -134,12 +162,58 @@ export default function Rate(props) {
   }
 
   const inputStyle = {
-    background: '#1a1d24', color: '#f5f5f5', border: '1px solid #2a2d34',
-    borderRadius: '8px', padding: '10px 12px', fontSize: '14px', width: '100%',
+    background: '#1a1d24',
+    color: '#f5f5f5',
+    border: '1px solid #2a2d34',
+    borderRadius: '8px',
+    padding: '10px 12px',
+    fontSize: '14px',
+    width: '100%',
   };
 
+  const pageStyle = {
+    padding: '24px',
+    paddingBottom: '100px',
+    maxWidth: '480px',
+    margin: '0 auto',
+    fontFamily: '-apple-system, sans-serif',
+  };
+
+  const overlayStyle = {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.6)',
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    zIndex: 100,
+  };
+
+  const sheetStyle = {
+    background: '#14161b',
+    borderRadius: '24px 24px 0 0',
+    padding: '24px',
+    width: '100%',
+    maxWidth: '480px',
+    paddingBottom: '40px',
+    maxHeight: '85vh',
+    overflowY: 'auto',
+  };
+
+  function closeOverlay() {
+    setShowForm(false);
+  }
+
+  function stopClick(e) {
+    e.stopPropagation();
+  }
+
+  function openForm() {
+    setShowForm(true);
+  }
+
   return (
-    <div style={{ padding: '24px', paddingBottom: '100px', maxWidth: '480px', margin: '0 auto', fontFamily: '-apple-system, sans-serif' }}>
+    <div style={pageStyle}>
       <h1 style={{ fontSize: '22px', marginBottom: '20px' }}>Rate</h1>
 
       <div style={{ background: '#1a1d24', borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
@@ -148,25 +222,42 @@ export default function Rate(props) {
       </div>
 
       <button
-        onClick={function() { setShowForm(true); }}
+        onClick={openForm}
         style={{
-          background: '#60a5fa', color: '#0f1115', border: 'none',
-          borderRadius: '999px', padding: '12px 20px', fontSize: '14px',
-          fontWeight: 'bold', cursor: 'pointer', width: '100%', marginBottom: '20px',
+          background: '#60a5fa',
+          color: '#0f1115',
+          border: 'none',
+          borderRadius: '999px',
+          padding: '12px 20px',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          width: '100%',
+          marginBottom: '20px',
         }}
       >
         + Aggiungi rata
       </button>
 
-      {rate.length === 0 && (
+      {rate.length === 0 ? (
         <p style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center', padding: '20px 0' }}>
           Nessuna rata registrata
         </p>
-      )}
+      ) : null}
 
       {rate.map(function(r, i) {
         const completata = r.numeroRateTotali && r.ratePagate >= r.numeroRateTotali;
         const perc = r.numeroRateTotali ? (r.ratePagate / r.numeroRateTotali) * 100 : 0;
+        const percClamped = perc > 100 ? 100 : perc;
+
+        function pagaClick() {
+          handlePaga(r.rowNumber);
+        }
+
+        function eliminaClick() {
+          handleElimina(r.rowNumber);
+        }
+
         return (
           <div key={i} style={{ background: '#1a1d24', borderRadius: '16px', padding: '16px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -174,36 +265,36 @@ export default function Rate(props) {
               <p style={{ fontSize: '15px', fontWeight: 'bold' }}>€ {formatEuro(r.importo)}</p>
             </div>
             <p style={{ fontSize: '12px', color: '#9aa0a6', marginBottom: '8px' }}>
-              {r.categoria} · {r.conto} · {r.frequenza}
+              {r.categoria} - {r.conto} - {r.frequenza}
             </p>
             <p style={{ fontSize: '12px', color: '#9aa0a6', marginBottom: '10px' }}>
               Prossima scadenza: {r.prossimaScadenza} {r.giorniRimanenti ? '(' + r.giorniRimanenti + ')' : ''}
             </p>
 
-            {r.numeroRateTotali && (
+            {r.numeroRateTotali ? (
               <div style={{ marginBottom: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <p style={{ fontSize: '12px', color: '#9aa0a6' }}>Rate pagate</p>
                   <p style={{ fontSize: '12px', fontWeight: 'bold' }}>{r.ratePagate} di {r.numeroRateTotali}</p>
                 </div>
                 <div style={{ background: '#2a2d34', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
-                  <div style={{ background: completata ? '#4ade80' : '#60a5fa', height: '100%', width: Math.min(perc, 100) + '%' }}></div>
+                  <div style={{ background: completata ? '#4ade80' : '#60a5fa', height: '100%', width: percClamped + '%' }}></div>
                 </div>
               </div>
-            )}
+            ) : null}
 
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-              {!completata && (
+              {!completata ? (
                 <button
-                  onClick={function() { handlePaga(r.rowNumber); }}
+                  onClick={pagaClick}
                   disabled={loading}
                   style={{ flex: 1, background: '#2a2d34', color: '#f5f5f5', border: 'none', borderRadius: '10px', padding: '8px', fontSize: '12px', cursor: 'pointer' }}
                 >
                   Segna pagata
                 </button>
-              )}
+              ) : null}
               <button
-                onClick={function() { handleElimina(r.rowNumber); }}
+                onClick={eliminaClick}
                 disabled={loading}
                 style={{ flex: 1, background: '#2a2d34', color: '#f87171', border: 'none', borderRadius: '10px', padding: '8px', fontSize: '12px', cursor: 'pointer' }}
               >
@@ -214,47 +305,123 @@ export default function Rate(props) {
         );
       })}
 
-      {showForm && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100 }}
-          onClick={function() { setShowForm(false); }}
-        >
-          <div
-            style={{ background: '#14161b', borderRadius: '24px 24px 0 0', padding: '24px', width: '100%', maxWidth: '480px', paddingBottom: '40px', maxHeight: '85vh', overflowY: 'auto' }}
-            onClick={function(e) { e.stopPropagation(); }}
-          >
+      {showForm ? (
+        <div style={overlayStyle} onClick={closeOverlay}>
+          <div style={sheetStyle} onClick={stopClick}>
             <div style={{ width: '40px', height: '4px', background: '#3a3d44', borderRadius: '2px', margin: '0 auto 20px' }}></div>
             <h2 style={{ fontSize: '18px', marginBottom: '20px' }}>Nuova rata</h2>
 
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>Descrizione</label>
-                <input type="text" style={inputStyle} value={descrizione} onChange={function(e) { setDescrizione(e.target.value); }} required placeholder="es. iPhone Pro" />
+                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>
+                  Descrizione
+                </label>
+                <input
+                  type="text"
+                  style={inputStyle}
+                  value={descrizione}
+                  onChange={handleDescrizioneChange}
+                  required
+                  placeholder="es. iPhone Pro"
+                />
               </div>
 
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>Categoria</label>
-                <input type="text" style={inputStyle} value={categoria} onChange={function(e) { setCategoria(e.target.value); }} required placeholder="es. Rate" />
+                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>
+                  Categoria
+                </label>
+                <input
+                  type="text"
+                  style={inputStyle}
+                  value={categoria}
+                  onChange={handleCategoriaChange}
+                  required
+                  placeholder="es. Rate"
+                />
               </div>
 
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>Importo rata (€)</label>
-                <input type="number" step="0.01" style={inputStyle} value={importo} onChange={function(e) { setImporto(e.target.value); }} required placeholder="0.00" />
+                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>
+                  Importo rata (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  style={inputStyle}
+                  value={importo}
+                  onChange={handleImportoChange}
+                  required
+                  placeholder="0.00"
+                />
               </div>
 
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>Conto abituale</label>
-                <input type="text" style={inputStyle} value={conto} onChange={function(e) { setConto(e.target.value); }} required placeholder="es. Revolut Rate" />
+                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>
+                  Conto abituale
+                </label>
+                <input
+                  type="text"
+                  style={inputStyle}
+                  value={conto}
+                  onChange={handleContoChange}
+                  required
+                  placeholder="es. Revolut Rate"
+                />
               </div>
 
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>Frequenza</label>
-                <select style={inputStyle} value={frequenza} onChange={function(e) { setFrequenza(e.target.value); }}>
+                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>
+                  Frequenza
+                </label>
+                <select
+                  style={inputStyle}
+                  value={frequenza}
+                  onChange={handleFrequenzaChange}
+                >
                   <option value="Mensile">Mensile</option>
                   <option value="Annuale">Annuale</option>
                 </select>
               </div>
 
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>Prossima scadenza</label>
-                <input type="date"
+                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>
+                  Prossima scadenza
+                </label>
+                <input
+                  type="date"
+                  style={inputStyle}
+                  value={prossimaScadenza}
+                  onChange={handleDataChange}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '12px', color: '#9aa0a6' }}>
+                  Numero rate totali (opzionale)
+                </label>
+                <input
+                  type="number"
+                  style={inputStyle}
+                  value={numeroRateTotali}
+                  onChange={handleNumeroRateChange}
+                  placeholder="es. 12"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ background: '#60a5fa', color: '#0f1115', border: 'none', borderRadius: '999px', padding: '14px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}
+              >
+                {loading ? 'Salvataggio...' : 'Salva rata'}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      <NavBar />
+    </div>
+  );
+}
