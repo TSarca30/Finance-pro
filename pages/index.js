@@ -16,7 +16,8 @@ function parsePercent(value) {
 export async function getServerSideProps() {
   const saldiRows = await getSheetData('Saldi_Conti');
   const investRows = await getSheetData('Investimenti');
-
+  const transRows = await getSheetData('Transazioni');
+  
   const contiData = saldiRows.slice(4).filter(r => r[0]);
   const conti = contiData.map(r => ({
     nome: r[0],
@@ -46,8 +47,38 @@ export async function getServerSideProps() {
 
   const totale = liquido + totaleValoreAttuale;
 
+  function parseDataIt(value) {
+    if (!value) return null;
+    const parts = value.split('/');
+    if (parts.length !== 3) return null;
+    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+  }
+
+  const oggi = new Date();
+  const meseCorrente = oggi.getMonth();
+  const annoCorrente = oggi.getFullYear();
+
+  const transDataRows = transRows.slice(3).filter(r => r[0] && r[1] && r[2]);
+  const uscitePerCategoria = {};
+
+  transDataRows.forEach(function(r) {
+    const data = parseDataIt(r[1]);
+    const tipo = r[7] || '';
+    if (!data || tipo !== 'Uscita') return;
+    if (data.getMonth() !== meseCorrente || data.getFullYear() !== annoCorrente) return;
+    const cat = r[3] || 'Altro';
+    const importo = parseEuro(r[6]);
+    uscitePerCategoria[cat] = (uscitePerCategoria[cat] || 0) + Math.abs(importo);
+  });
+
+  const usciteMese = Object.keys(uscitePerCategoria).map(function(cat) {
+    return { categoria: cat, totale: uscitePerCategoria[cat] };
+  }).sort(function(a, b) { return b.totale - a.totale; });
+
+  const totaleUsciteMese = usciteMese.reduce((s, u) => s + u.totale, 0);
+
   return {
-    props: { contiLiquidi, liquido, investimenti, totaleInvestito, totaleValoreAttuale, rendimentoMedio, totale },
+    props: { contiLiquidi, liquido, investimenti, totaleInvestito, totaleValoreAttuale, rendimentoMedio, totale, usciteMese, totaleUsciteMese },
   };
 }
 
@@ -68,7 +99,9 @@ export default function Home(props) {
   const totaleValoreAttuale = props.totaleValoreAttuale;
   const rendimentoMedio = props.rendimentoMedio;
   const totale = props.totale;
-
+  const usciteMese = props.usciteMese;
+  const totaleUsciteMese = props.totaleUsciteMese;
+  
   const [openLiquido, setOpenLiquido] = useState(false);
   const [openInvestito, setOpenInvestito] = useState(false);
 
@@ -143,10 +176,33 @@ export default function Home(props) {
         </div>
       )}
 
-      <h2 style={{ fontSize: '16px', marginTop: '24px', marginBottom: '12px', color: '#9aa0a6' }}>Analitiche</h2>
-      <a href="/analytics" style={{ display: 'block', background: '#1a1d24', borderRadius: '16px', padding: '20px', textAlign: 'center', textDecoration: 'none', color: '#f5f5f5' }}>
+      <h2 style={{ fontSize: '16px', marginTop: '24px', marginBottom: '12px', color: '#9aa0a6' }}>Uscite di questo mese</h2>
+      <div style={{ background: '#1a1d24', borderRadius: '16px', padding: '16px', marginBottom: '12px' }}>
+        {usciteMese.length === 0 && (
+          <p style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>Nessuna uscita registrata questo mese</p>
+        )}
+        {usciteMese.map(function(u, i) {
+          const perc = totaleUsciteMese > 0 ? (u.totale / totaleUsciteMese) * 100 : 0;
+          return (
+            <div key={i} style={{ marginBottom: i < usciteMese.length - 1 ? '10px' : 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <p style={{ fontSize: '13px' }}>{u.categoria}</p>
+                <p style={{ fontSize: '13px', fontWeight: 'bold' }}>€ {formatEuro(u.totale)}</p>
+              </div>
+              <div style={{ background: '#2a2d34', borderRadius: '4px', height: '5px', overflow: 'hidden' }}>
+                <div style={{ background: '#f87171', height: '100%', width: perc + '%' }}></div>
+              </div>
+            </div>
+          );
+        })}
+        {usciteMese.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '14px', paddingTop: '10px', borderTop: '1px solid #2a2d34' }}>
+            <p style={{ fontSize: '13px', color: '#9aa0a6' }}>Totale</p>
+            <p style={{ fontSize: '13px', fontWeight: 'bold' }}>€ {formatEuro(totaleUsciteMese)}</p>
+          </div>
+        )}
+      </div>
+
+      <a href="/analytics" style={{ display: 'block', background: '#1a1d24', borderRadius: '16px', padding: '16px', textAlign: 'center', textDecoration: 'none', color: '#f5f5f5' }}>
         <p style={{ fontSize: '13px' }}>Vai alle analitiche dettagliate →</p>
       </a>
-    </div>
-  );
-}
