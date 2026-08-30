@@ -17,16 +17,22 @@ export async function getServerSideProps() {
   const rows = await getSheetData('Investimenti');
 
   const acquisti = [];
+  let totaleSafeback = 0;
   for (let i = 3; i < rows.length; i++) {
     const row = rows[i];
     if (!row || !row[0] || !row[1]) continue;
+    const sottocategoria = row[2] || '';
+    const importoRiga = parseEuro(row[5]);
+    if (sottocategoria === 'Safeback') {
+      totaleSafeback += importoRiga;
+    }
     acquisti.push({
       data: row[0],
       conto: row[1],
-      descrizione: row[2] || '',
+      sottocategoria: sottocategoria,
       quote: row[3] || '',
       prezzoUnitario: parseEuro(row[4]),
-      importo: parseEuro(row[5]),
+      importo: importoRiga,
     });
   }
 
@@ -52,7 +58,7 @@ export async function getServerSideProps() {
   acquisti.reverse();
 
   return {
-    props: { acquisti, riepilogo, totaleInvestito, totaleValoreAttuale, totalePlusMinus, rendimentoMedio },
+    props: { acquisti, riepilogo, totaleInvestito, totaleValoreAttuale, totalePlusMinus, rendimentoMedio, totaleSafeback },
   };
 }
 
@@ -72,6 +78,7 @@ export default function Investimenti(props) {
   const totaleValoreAttuale = props.totaleValoreAttuale;
   const totalePlusMinus = props.totalePlusMinus;
   const rendimentoMedio = props.rendimentoMedio;
+  const totaleSafeback = props.totaleSafeback;
 
   const positivo = rendimentoMedio >= 0;
 
@@ -91,6 +98,7 @@ export default function Investimenti(props) {
         <div style={{ flex: 1, background: '#1a1d24', borderRadius: '16px', padding: '16px' }}>
           <p style={{ fontSize: '12px', color: '#9aa0a6' }}>Capitale investito</p>
           <p style={{ fontSize: '17px', fontWeight: 'bold' }}>€ {formatEuro(totaleInvestito)}</p>
+          <p style={{ fontSize: '10px', color: '#6b7280', marginTop: '2px' }}>di cui safeback: € {formatEuro(totaleSafeback)}</p>
         </div>
         <div style={{ flex: 1, background: '#1a1d24', borderRadius: '16px', padding: '16px' }}>
           <p style={{ fontSize: '12px', color: '#9aa0a6' }}>Guadagno</p>
