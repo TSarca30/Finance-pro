@@ -68,6 +68,50 @@ export default function Rate(props) {
     return parts[2] + '/' + parts[1] + '/' + parts[0];
   }
 
+    function parseDataItToIcs(dataStr) {
+    const parts = dataStr.split('/');
+    if (parts.length !== 3) return null;
+    return parts[2] + parts[1] + parts[0];
+  }
+
+  function handleAddCalendar(r) {
+    const dataIcs = parseDataItToIcs(r.prossimaScadenza);
+    if (!dataIcs) {
+      alert('Data non valida per questa rata');
+      return;
+    }
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//FinanzePersonali//Rate//IT',
+      'BEGIN:VEVENT',
+      'UID:' + r.rowNumber + '-' + dataIcs + '@finanzepersonali',
+      'DTSTAMP:' + dataIcs + 'T090000Z',
+      'DTSTART;VALUE=DATE:' + dataIcs,
+      'DTEND;VALUE=DATE:' + dataIcs,
+      'SUMMARY:' + r.descrizione + ' - Rata € ' + formatEuro(r.importo),
+      'DESCRIPTION:Pagamento rata ' + r.descrizione + ' su ' + r.conto,
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Promemoria rata',
+      'TRIGGER:-P1D',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = r.descrizione.replace(/\s+/g, '_') + '.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+  
   function handleDescrizioneChange(e) {
     setDescrizione(e.target.value);
   }
@@ -294,6 +338,12 @@ export default function Rate(props) {
                   Segna pagata
                 </button>
               ) : null}
+              <button
+                onClick={function() { handleAddCalendar(r); }}
+                style={{ flex: 1, background: '#2a2d34', color: '#60a5fa', border: 'none', borderRadius: '10px', padding: '8px', fontSize: '12px', cursor: 'pointer' }}
+              >
+                📅 Calendario
+              </button>
               <button
                 onClick={eliminaClick}
                 disabled={loading}
