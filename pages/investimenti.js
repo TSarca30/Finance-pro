@@ -139,7 +139,7 @@ export default function Investimenti(props) {
         return (
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #2a2d34' }}>
             <div>
-              <p style={{ fontSize: '13px' }}>{a.descrizione || a.conto}</p>
+              <p style={{ fontSize: '13px' }}>{a.sottocategoria || a.conto}</p>
               <p style={{ fontSize: '11px', color: '#9aa0a6' }}>{a.data} - {a.conto}</p>
             </div>
             <p style={{ fontSize: '13px', fontWeight: 'bold' }}>€ {formatEuro(a.importo)}</p>
