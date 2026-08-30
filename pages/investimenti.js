@@ -31,7 +31,7 @@ export async function getServerSideProps() {
   }
 
   const riepilogo = [];
-  for (let i = 3; i < rows.length; i++) {
+  for (let i = 4; i < rows.length; i++) {
     const row = rows[i];
     if (!row || !row[7] || row[7] === 'TOTALE COMPLESSIVO') continue;
     riepilogo.push({
